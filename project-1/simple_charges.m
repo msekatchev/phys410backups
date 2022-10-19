@@ -1,6 +1,6 @@
-nc = 2;
-tmax = 100;
-level = 8;
+nc = 13;
+tmax = 1000;
+level = 15;
 gamma = 1;
 epsec = 1.0e-5;
 

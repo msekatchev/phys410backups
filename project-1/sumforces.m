@@ -11,10 +11,6 @@ function s = sumforces(r)
 % Output arguments
 %
 % s: Array of sums of all separation vectors for each charge(nc x 3 array)
-% r: Positions of charges (nc x 3 x nt array)
-% v: Potential vector (length nt row vector)
-% v_ec: Equivalence class counts (row vector with length determined
-% by equivalence class analysis)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     nc = size(r,1);
     s = zeros(nc,3);
