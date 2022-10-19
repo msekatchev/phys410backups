@@ -48,6 +48,6 @@ function [t, r, v, v_ec] = charges(r0, tmax, level, gamma, epsec)
     
     v(end) = totalenergy(r(:,:,end));
     
-    %v_ec = equivclasses(r(:,:,end), epsec);
-    v_ec = 0;
+    v_ec = equivclasses(r(:,:,end), epsec);
+    %v_ec = 0;
 end
