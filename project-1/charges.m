@@ -29,13 +29,14 @@ function [t, r, v, v_ec] = charges(r0, tmax, level, gamma, epsec)
     r = zeros(nc,3,nt);
     v = zeros(length(t),1);
     
-    % initial conditions r^1, r^2
+    % initial conditions r^1 = r^2
     r(:,:,1) = r0;
     r(:,:,2) = r0;
     
     % alpha and beta for simplifying & minimizing calculations
     a = gamma / (2*dt);
     b = 1/dt^2;
+    % ^ these don't need to be computed anew for each iteration
     
     v(1) = totalenergy(r(:,:,1));
     
