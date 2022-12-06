@@ -1,15 +1,24 @@
-tmax = 0.05;
-level = 6;
-lambda = 0.05;
-idtype = 0;
-idpar = [2,3];
-%idtype = 1;
-%idpar = [3,4,5,6,7,8];
-vtype = 1;
-vpar = [0.4,0.6,0.6,0.8,5];
-vtype = 2;
-vpar = [0.4,0.6,0.6,0.8,5];
-vtype = 0;
+function [x y t psi psire psiim psimod v] = sch_2d_adi(tmax, level, lambda, idtype, idpar, vtype, vpar)
+% Inputs
+%
+% tmax: Maximum integration time
+% level: Discretization level
+% lambda: dt/dx
+% idtype: Selects initial data type
+% idpar: Vector of initial data parameters
+% vtype: Selects potential type
+% vpar: Vector of potential parameters
+%
+% Outputs
+%
+% x: Vector of x coordinates [nx]
+% y: Vector of y coordinates [ny]
+% t: Vector of t coordinates [nt]
+% psi: Array of computed psi values [nt x nx x ny]
+% psire Array of computed psi_re values [nt x nx x ny]
+% psiim Array of computed psi_im values [nt x nx x ny]
+% psimod Array of computed sqrt(psi psi*) values [nt x nx x ny]
+% v Array of potential values [nx x ny]
 
 % initialize discretization mesh
 nx = 2^level + 1;
@@ -23,9 +32,7 @@ nt = round(tmax / dt) + 1;
 
 t   = [0: nt-1] * dt;
 
-%psi = zeros(nt,nx,ny) + 1i * zeros(nt,nx,ny);
 psi = zeros(nt,nx,ny, 'like', 1j);
-% https://www.mathworks.com/matlabcentral/answers/94599-how-do-i-initialize-a-complex-array-to-zeros-in-matlab
 
 y_T = y.';
 
@@ -44,8 +51,7 @@ else
     px     = idpar(5);
     py     = idpar(6);
     delta = idpar(2);
-
-    %psi(1,:,:) = exp(1i*px*x_mesh).*exp(1i*py*y_mesh).*exp(-( ((x_mesh-x0)/deltax).^2 + ((y_mesh-y0)/deltay).^2));
+    
     psi(1,:,:) = exp(1i*px*x).*exp(1i*py*y_T).*exp(-( ((x-x0)/deltax).^2 + ((y_T-y0)/deltay).^2));
 end
 
@@ -65,7 +71,6 @@ if vtype == 1
     Vc   = vpar(5);
     
     v((x>xmin & x<xmax) & (y_T>ymin & y_T<ymax)) = Vc;
-    %dm(x>xmin & x<xmax) = dm(x>xmin & x<xmax) - 1/2*Vc;
 end
 if vtype == 2
     x1 = vpar(1);
@@ -116,8 +121,8 @@ F0 = 1 - 1i * dt/(  dx^2) * ones(nx,ny);
 Fm = Fp;
 
 % LHS - B constants -------------------------------------------------------
-Bp =    -1i * dt/(2*dy^2) * ones(1,ny);
-B0 = 1 + 1i * dt/(  dy^2) + 1i*dt/2*v;     % this one is [nx,ny], a different row will be select for each ii
+Bp =   - 1i * dt/(2*dy^2) * ones(1,ny);
+B0 = 1 + 1i * dt/(  dy^2) + 1i*dt/2*v;     % this one is [nx,ny], a different row will be selected for each ii
 Bm = Bp;
 
 G = zeros(nx,ny);
@@ -127,39 +132,43 @@ psi_temp = zeros(nx,ny, 'like', 1j);
 psi_nplus15 = zeros(nt,nx,ny, 'like', 1j);
 
 for n = [1:nt-1]
-    for jj = [2:ny-1]
-        % RHS - G matrix ------------------------------------------------------
-        G(:,2:nx-1) = Gp(:,jj).*psi(n,3:nx,jj) + G0(:,jj).*psi(n,2:nx-1,jj)  + Gm(:,jj).*psi(n,1:nx-2,jj);
-        %                       psi_i+1,j                 psi_i,j                      psi_i-1,j
-        G(nx,:) = 0;
-        G(1, :) = 0;
-        % RHS - F matrix ------------------------------------------------------
-        F(:,2:nx-1) = Fp(:,3:nx).*G(:,3:nx)    + F0(:,2:nx-1).*G(:,2:nx-1)   + Fm(:,1:nx-2).*G(:,1:nx-2);    
-        F(nx,:) = 0;
-        F(1, :) = 0;
+    psi_n = squeeze(psi(n,:,:));
+    G(:,(2:ny-1)) = Gp(:,(3:ny)) .* psi_n(:,(3:ny)) + G0(:,(2:ny-1)) .* psi_n(:,(2:ny-1)) + Gm(:,(1:ny-2)) .* psi_n(:,(1:ny-2));
 
-        psi_temp( :, :) = A \ F;
-        
-        psi_temp(nx, :) = 0;
-        psi_temp( 1, :) = 0;
-        psi_temp( :,ny) = 0;
-        psi_temp( :, 1) = 0;
-        psi_nplus15(n,:,:) = psi_temp;
+    F((2:nx-1),:) = Fp((3:nx),:) .* G((3:nx),:) + F0((2:nx-1),:) .* G((2:nx-1),:) + Fm((1:nx-2),:) .* G((1:nx-2),:);
+    
+    
+    for jj = [2:ny-1]
+        psi_temp(:,jj) = A \ F(:,jj);
     end
+    
+    % reinforce BCs
+    psi_temp(nx, :) = 0;
+    psi_temp( 1, :) = 0;
+    psi_temp( :,ny) = 0;
+    psi_temp( :, 1) = 0;
     
     for ii = [2:nx-1]
-    
         % define sparse matrix for B, different one for each ii
-        B = spdiags([Bp.' B0(ii,:).' Bm.'], -1:1, ny, ny);
-        psi(n+1, ii, :) = (B \ psi_temp(ii, :).').';
+        Bupper = Bp.';
+        Bmain  = B0(ii,:).';
+        Blower = Bm.';
+        % fix tridiagonal boundary cases
+        Bupper(2)    = 0;
+        Bmain(1)     = 1;
+        Bmain(nx)    = 1;
+        Blower(nx-1) = 0; 
         
-        % reinforce boundary conditions
-        psi(:,nx, :) = 0;
-        psi(:, 1, :) = 0;
-        psi(:, :,ny) = 0;
-        psi(:, :, 1) = 0;
+        B = spdiags([Blower Bmain Bupper], -1:1, ny, ny);
+        
+        psi(n+1,ii,:) = (B \ psi_temp(ii,:).').';
     end
     
+    % reinforce BCs
+    psi(:,nx, :) = 0;
+    psi(:, 1, :) = 0;
+    psi(:, :,ny) = 0;
+    psi(:, :, 1) = 0;
     
 end
 
@@ -167,13 +176,6 @@ psire = real(psi);
 psiim = imag(psi);
 psimod = abs(psi);
 
-probability = zeros(1,nt);
 
-for n = 1:nt
-    %probability(n) = norm(squeeze(psi(n,:,:)));
-    probability(n) = norm(squeeze(psi_nplus15(n,:,:)));
+
 end
-
-
-
-

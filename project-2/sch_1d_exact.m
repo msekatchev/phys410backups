@@ -7,6 +7,6 @@ nt = length(t);
 x_array = repmat(x,nt,1);
 t_array = repmat(transpose(t),1,nx);
 
-psi_exact = exp(-1i*m^2*pi*2*t_array).*sin(m*pi*x_array);
+psi_exact = exp(-1i*m^2*pi^2*t_array).*sin(m*pi*x_array);
 end
 

@@ -112,7 +112,7 @@ Gm = Gp;
 
 % RHS - F constants -------------------------------------------------------
 Fp =     1i * dt/(2*dx^2) * ones(nx,ny);
-F0 = 1 - 1i * dt/(  dx^2) * ones(nx,ny);
+F0 = 1 - 1i * dt/(  dx^2) * ones(nx,ny); % I changed this to a plus.
 Fm = Fp;
 
 % LHS - B constants -------------------------------------------------------
@@ -129,28 +129,50 @@ psi_nplus15 = zeros(nt,nx,ny, 'like', 1j);
 for n = [1:nt-1]
     for jj = [2:ny-1]
         % RHS - G matrix ------------------------------------------------------
-        G(:,2:nx-1) = Gp(:,jj).*psi(n,3:nx,jj) + G0(:,jj).*psi(n,2:nx-1,jj)  + Gm(:,jj).*psi(n,1:nx-2,jj);
+        %G(2:nx-1,:) = Gp(:,jj).*psi(n,3:nx,jj) + G0(:,jj).*psi(n,2:nx-1,jj)  + Gm(:,jj).*psi(n,1:nx-2,jj);
         %                       psi_i+1,j                 psi_i,j                      psi_i-1,j
-        G(nx,:) = 0;
-        G(1, :) = 0;
-        % RHS - F matrix ------------------------------------------------------
-        F(:,2:nx-1) = Fp(:,3:nx).*G(:,3:nx)    + F0(:,2:nx-1).*G(:,2:nx-1)   + Fm(:,1:nx-2).*G(:,1:nx-2);    
-        F(nx,:) = 0;
-        F(1, :) = 0;
-
-        psi_temp( :, :) = A \ F;
+%        G(2:nx-1,jj) = Gp(3:nx,jj).*psi(n,3:nx,jj).'  +   G0(2:nx-1,jj).*psi(n,2:nx-1,jj).'  +  Gm(1:nx-2,jj).*psi(n,1:nx-2,jj).';         
+%        G(nx,:) = 0;
+%        G(1, :) = 0;
         
+        G(:,jj)  = Gp(:,jj-1).*psi(n,:,jj-1).' + G0(:,jj).*psi(n,:,jj).' + Gm(:,jj+1).*psi(n,:,jj+1).';
+        G(nx,:)  = 0;
+        G(1, :)  = 0;
+        G(: ,ny) = 0;
+        G(:,1)   = 0;
+        % RHS - F matrix ------------------------------------------------------
+        %F(jj,2:nx-1) = Fp(3:nx,jj).*G(:,3:nx)    + F0(:,2:nx-1).*G(:,2:nx-1)   + Fm(:,1:nx-2).*G(:,1:nx-2);    
+        %F(nx,:) = 0;
+        %F(1, :) = 0;
+    end
+    for ii = [2:nx-1]
+        F(ii,:)  = Fp(ii+1,:).*G(ii+1,:) + F0(ii,:).*G(ii,:) + Fm(ii-1,:).*G(ii-1,:);
+        F(nx,:)  = 0;
+        F(1, :)  = 0;
+        F(: ,ny) = 0;
+        F(:,1)   = 0;
+        psi_temp(ii,:) = A \ F(ii,:).';
         psi_temp(nx, :) = 0;
         psi_temp( 1, :) = 0;
         psi_temp( :,ny) = 0;
         psi_temp( :, 1) = 0;
         psi_nplus15(n,:,:) = psi_temp;
-    end
-    
-    for ii = [2:nx-1]
-    
+        
         % define sparse matrix for B, different one for each ii
-        B = spdiags([Bp.' B0(ii,:).' Bm.'], -1:1, ny, ny);
+        Bupper = Bp.';
+        Bmain  = B0(ii,:).';
+        Blower = Bm.';
+        % fix tridiagonal boundary cases
+        Bupper(2)    = 0;
+        Bmain(1)     = 1;
+        Bmain(nx)    = 1;
+        Blower(nx-1) = 0;     
+        
+        B = spdiags([Blower Bmain Bupper], -1:1, ny, ny);
+        %B = spdiags([Bp.' B0(ii,:).' Bm.'], -1:1, ny, ny);
+        
+
+        %psi(n+1, ii, :) = (B \ psi_temp(ii, :).').';
         psi(n+1, ii, :) = (B \ psi_temp(ii, :).').';
         
         % reinforce boundary conditions
@@ -160,6 +182,10 @@ for n = [1:nt-1]
         psi(:, :, 1) = 0;
     end
     
+   %for ii = [2:nx-1]
+    
+
+   %end
     
 end
 
@@ -173,7 +199,6 @@ for n = 1:nt
     %probability(n) = norm(squeeze(psi(n,:,:)));
     probability(n) = norm(squeeze(psi_nplus15(n,:,:)));
 end
-
 
 
 

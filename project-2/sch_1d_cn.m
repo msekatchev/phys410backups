@@ -47,7 +47,7 @@ end
 psi(:,nx) = 0;
 psi(:,1) = 0;
 
-% set up middle diagonal based on potential
+% set up potential
 v = zeros(nx, 1);
 if vtype == 1
     xmin = vpar(1);
