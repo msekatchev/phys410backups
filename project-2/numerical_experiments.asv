@@ -1,0 +1,61 @@
+% Case 1
+idtype = 0;
+vtype  = 0;
+idpar  = [2, 3];
+vpar   = 0;
+tmax   = 0.05;
+lambda = 0.05;
+level = 6;
+
+[x y t psi psire psiim psimod v] = sch_2d_adi(tmax, level, lambda, idtype, idpar, vtype, vpar);
+
+
+%animate_2d_schro(x,y,t,psimod,v);
+
+[X,Y] = meshgrid(x,y);
+
+%contourf(X,Y,v);
+
+
+
+
+
+% Case 2
+idtype = 0;
+vtype  = 1;
+idpar  = [2, 3];
+vpar   = [0.5,0.7,0.2,0.5,1e6];
+tmax   = 0.05;
+lambda = 0.05;
+level = 6;
+
+[x y t psi psire psiim psimod v] = sch_2d_adi(tmax, level, lambda, idtype, idpar, vtype, vpar);
+
+plot_2d_potential(x,y,v,vtype,"[0.5,0.7,0.2,0.5,1e6]")
+%animate_2d_schro(x,y,t,psimod,v);
+
+
+
+
+
+% Case 2
+idtype = 0;
+vtype  = 1;
+idpar  = [2, 3];
+vpar   = [0.5,0.7,0.2,0.5,1e6];
+tmax   = 0.05;
+lambda = 0.05;
+level = 6;
+
+[x y t psi psire psiim psimod v] = sch_2d_adi(tmax, level, lambda, idtype, idpar, vtype, vpar);
+
+plot_2d_potential(x,y,v,vtype,"[0.5,0.7,0.2,0.5,1e6]")
+%animate_2d_schro(x,y,t,psimod,v);
+
+
+
+
+
+
+
+
