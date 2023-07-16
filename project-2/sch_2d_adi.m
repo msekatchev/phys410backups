@@ -1,4 +1,5 @@
 function [x y t psi psire psiim psimod v] = sch_2d_adi(tmax, level, lambda, idtype, idpar, vtype, vpar)
+% Solves 2D time-dependent Schrodinger equation via the Alternating Different Method
 % Inputs
 %
 % tmax: Maximum integration time
@@ -129,8 +130,6 @@ G = zeros(nx,ny);
 F = zeros(nx,ny);
 psi_temp = zeros(nx,ny, 'like', 1j);
 
-psi_nplus15 = zeros(nt,nx,ny, 'like', 1j);
-
 for n = [1:nt-1]
     psi_n = squeeze(psi(n,:,:));
     G(:,(2:ny-1)) = Gp(:,(3:ny)) .* psi_n(:,(3:ny)) + G0(:,(2:ny-1)) .* psi_n(:,(2:ny-1)) + Gm(:,(1:ny-2)) .* psi_n(:,(1:ny-2));
@@ -175,7 +174,5 @@ end
 psire = real(psi);
 psiim = imag(psi);
 psimod = abs(psi);
-
-
 
 end

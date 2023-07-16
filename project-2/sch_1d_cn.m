@@ -87,8 +87,6 @@ C2 = 1i/dt + 1/dx^2;
 C3 = C1;
 for n=1:nt-1
     if vtype == 1
-        %disp(size(v(2:nx-1)))
-        %disp(size(psi(n,2:nx-1)))
         f(2:nx-1) = C1*psi(n,3:nx) + C2*psi(n,2:nx-1) + 1/2*transpose(v(2:nx-1)).*psi(n,2:nx-1) + C3*psi(n,1:nx-2);        
     else                                                        %  vvvvv?
         f(2:nx-1) = C1*psi(n,3:nx) + C2*psi(n,2:nx-1) + C3*psi(n,1:nx-2);
@@ -101,12 +99,6 @@ end
 psire = real(psi);
 psiim = imag(psi);
 psimod = abs(psi);
-
-%for ti=[1:nt]
-%    for xi = [1:nx]
-%        prob(ti,xi) = 1/2 * sum((psimod(ti,1:xi-1).^2 + psimod(ti,2:xi).^2).*(x(2:xi) - x(1:xi-1)));
-%    end
-%end
 
 prob = cumtrapz(psimod.^2, 2);
 prob = prob ./ prob(:,nx);

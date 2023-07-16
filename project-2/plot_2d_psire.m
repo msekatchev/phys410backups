@@ -1,5 +1,16 @@
 function plot_2d_psire(x,y,t,psire,case_name)
 % Create a video of the evolution of the solution on a 2d contourf plot
+%
+% Inputs:
+% x: Vector of x coordinates [nx]
+% y: Vector of y coordinates [ny]
+% t: Vector of t coordinates [nt]
+% psire Array of computed psi_re values [nt x nx x ny]
+% case_name: string for the name of the video
+% 
+% Outputs:
+% Saves a video titled "case_name.avi", with the evolution of psire.
+
 figure
 hold on
 xlabel("$x$",'Interpreter','latex')

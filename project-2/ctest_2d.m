@@ -30,9 +30,6 @@ title("Evolution of ||d\psi^l||_2, scaled by \rho = [1,4,4^2]. Case 1.")
 legend("l=6", "l=7", "l=8")
 hold off
 
-
-
-
 [err6, t6] = ctest_2d_func_err(tmax, 6, lambda, idtype, idpar, vtype, vpar);
 [err7, t7] = ctest_2d_func_err(tmax, 7, lambda, idtype, idpar, vtype, vpar);
 [err8, t8] = ctest_2d_func_err(tmax, 8, lambda, idtype, idpar, vtype, vpar);

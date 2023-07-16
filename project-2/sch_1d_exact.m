@@ -1,6 +1,15 @@
 function [psi_exact] = sch_1d_exact(x, t, m)
 % compute exact solution to 1D schrodinger equation with initial condition
 %  psi(x,0) = sin(m*pi*x)
+%
+% Inputs:
+% x: Vector of x coordinates [nx]
+% t: Vector of t coordinates [nt]
+% m: Parameter for exact solution
+%
+% Outputs:
+% psi_exact: Array of computed psi values [nt x nx]
+
 nx = length(x);
 nt = length(t);
 

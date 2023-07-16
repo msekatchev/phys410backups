@@ -1,6 +1,5 @@
-function plot_2d_psire_potential(x,y,t,psire,case_name,vpar)
-% Create a video of the evolution of the solution on a 2d contourf plot,
-% while also highlighting the region with a potential barrier/well
+function plot_3d_psire(x,y,t,psire,case_name)
+% Create a video of the evolution of the solution on a 3d contourf & surf plot
 %
 % Inputs:
 % x: Vector of x coordinates [nx]
@@ -8,22 +7,10 @@ function plot_2d_psire_potential(x,y,t,psire,case_name,vpar)
 % t: Vector of t coordinates [nt]
 % psire Array of computed psi_re values [nt x nx x ny]
 % case_name: string for the name of the video
-% vpar: Vector of potential parameters -- has to be barrier/well case
 % 
 % Outputs:
 % Saves a video titled "case_name.avi", with the evolution of psire.
 
-x1 = vpar(1);
-x2 = vpar(2);
-y1 = vpar(3);
-y2 = vpar(4);
-
-box_y = y1:0.01:y2;
-box_x = x1:0.01:x2;
-len_y = length(box_y);
-len_x = length(box_x);
-figure
-hold on
 xlabel("$x$",'Interpreter','latex')
 ylabel("$y$",'Interpreter','latex')
 
@@ -43,30 +30,32 @@ for ti = 1 : 1 : nt
     if ti==1
         xlabel("$x$",'Interpreter','latex')
         ylabel("$y$",'Interpreter','latex')
+        
+        % display initial solution for a few seconds
+        surf(X,Y,squeeze(psire(ti,:,:)), 'EdgeColor','none')
+        hold on;
+        contourf(X,Y,squeeze(psire(ti,:,:)));
+        hold off;
+        
         colorbar
         colormap("turbo")
         caxis([min_psire,max_psire])  
-        % display initial solution for a few seconds
-        contourf(X,Y,squeeze(psire(ti,:,:)));
-        plot(x1*ones(len_y,1),box_y,'k-')
-        plot(x2*ones(len_y,1),box_y,'k-')
-        plot(box_x,y1*ones(len_x,1),'k-')
-        plot(box_x,y2*ones(len_x,1),'k-')
+        zlim([min_psire,max_psire])
+        
         title(sprintf('Time step %d of %d: t = %.3g', ti, nt, t(ti)));
         for frame = 1:50
             writeVideo(vid, getframe(gcf));
         end
     end
 
+    surf(X,Y,squeeze(psire(ti,:,:)), 'EdgeColor','none')
+    zlim([min_psire,max_psire])
+    hold on;
+    contourf(X,Y,squeeze(psire(ti,:,:)));
+    hold off;
+    title(sprintf('Time step %d of %d: t = %.3g', ti, nt, t(ti)));
 
     
-    contourf(X,Y,squeeze(psire(ti,:,:)));
-    title(sprintf('Time step %d of %d: t = %.3g', ti, nt, t(ti)));
-    
-    plot(x1*ones(len_y,1),box_y,'k-')
-    plot(x2*ones(len_y,1),box_y,'k-')
-    plot(box_x,y1*ones(len_x,1),'k-')
-    plot(box_x,y2*ones(len_x,1),'k-')
     drawnow;
     writeVideo(vid,getframe(gcf));
 end

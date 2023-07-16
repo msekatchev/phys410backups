@@ -1,6 +1,14 @@
 function [psi_exact] = sch_2d_exact(x, y, t, mx, my)
 % compute exact solution to 2D schrodinger equation with initial condition
 %  psi(x,0) = sin(mx*pi*x)sin(my*pi*y)
+%
+% Inputs:
+% x: Vector of x coordinates [nx]
+% y: Vector of y coordinates [ny]
+% t: Vector of t coordinates [nt]
+% mx: Parameter for exact solution
+% my: Parameter for exact solution
+
 nx = length(x);
 ny = length(y);
 nt = length(t);
